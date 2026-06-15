@@ -10,7 +10,8 @@ mkdir -p logs
 timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 commit_count=0
 if [[ -f "$LOG_FILE" ]]; then
-  commit_count="$(grep -c "automated daily commit" "$LOG_FILE" || true)"
+  commit_count="$(grep -c "automated daily commit" "$LOG_FILE" 2>/dev/null || true)"
+  commit_count="${commit_count:-0}"
 fi
 commit_count=$((commit_count + 1))
 echo "$timestamp — automated daily commit #$commit_count" >> "$LOG_FILE"

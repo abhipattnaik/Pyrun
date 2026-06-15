@@ -18,19 +18,26 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      BRANCH: main
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+          fetch-depth: 0
 
-      - name: Configure git
+      - name: Create daily commit and push
         run: |
+          set -euo pipefail
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Create daily commit
-        run: |
+          git fetch origin "$BRANCH"
+          git checkout "$BRANCH"
+          git pull --rebase origin "$BRANCH"
+
           chmod +x commit.sh
           ./commit.sh
-
-      - name: Push to GitHub
-        run: git push
+          git push origin "$BRANCH"
