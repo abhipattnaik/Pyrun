@@ -1,11 +1,11 @@
 # Daily Git Commit
 
-Automatically commits to GitHub once per day. Runs in the cloud via **GitHub Actions** (no Mac required), with an optional **local macOS scheduler** as backup.
+Automatically commits to GitHub once per day. Written in **Python**, runs in the cloud via **GitHub Actions**, with an optional **local macOS scheduler** as backup.
 
 ## How it works
 
 1. A GitHub Action runs every day at **12:00 UTC**.
-2. It appends a timestamped line to `logs/activity.log`.
+2. Python appends a timestamped line to `logs/activity.log`.
 3. It creates a commit and pushes to your repository.
 
 You can also trigger a commit manually from **Actions** → **Daily Commit** → **Run workflow**.
@@ -14,9 +14,11 @@ You can also trigger a commit manually from **Actions** → **Daily Commit** →
 
 ```bash
 cd daily-git-commit
-./setup.sh      # configure git remote and push
-./run-now.sh    # test a commit immediately
+python3 -m daily_commit setup   # configure git remote and push
+python3 -m daily_commit run       # test a commit immediately
 ```
+
+Requires **Python 3.10+** and **git**. No pip packages needed — stdlib only.
 
 ## Setup (manual)
 
@@ -40,29 +42,37 @@ Actions are enabled by default. After the first push, open **Actions** in your r
 ### 4. Test it
 
 ```bash
-./run-now.sh
+python3 -m daily_commit run
 ```
 
 Or go to **Actions** → **Daily Commit** → **Run workflow**.
 
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `python3 -m daily_commit run` | Commit and push |
+| `python3 -m daily_commit commit` | Commit only (no push) |
+| `python3 -m daily_commit setup` | Interactive first-time setup |
+| `python3 -m daily_commit install-local` | macOS daily scheduler |
+| `python3 -m daily_commit ci` | Used by GitHub Actions |
+
 ## Optional: local macOS scheduler
 
-If you want commits to run from your Mac (e.g. when GitHub Actions is delayed):
-
 ```bash
-./install-local.sh
+python3 -m daily_commit install-local
 ```
 
-This installs a `launchd` job that runs `./run-now.sh` daily at your chosen time.
+Installs a `launchd` job that runs the Python app daily at your chosen time.
 
 ## Customize
 
 | What | Where |
 |------|-------|
 | Commit time (UTC) | `.github/workflows/daily-commit.yml` → `cron` field |
-| Commit message | `commit.sh` |
-| What gets updated | `commit.sh` → change `LOG_FILE` or add more files |
-| Local run time | `./install-local.sh` |
+| Commit message | `daily_commit/commit.py` |
+| What gets updated | `daily_commit/commit.py` → change `LOG_FILE` |
+| Local run time | `python3 -m daily_commit install-local` |
 
 [Cron syntax reference](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule)
 
