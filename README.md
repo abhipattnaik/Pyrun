@@ -1,6 +1,6 @@
 # Daily Git Commit
 
-Automatically commits to GitHub once per day. Written in **Python**, runs in the cloud via **GitHub Actions**, with an optional **local macOS scheduler** as backup.
+Automatically commits to GitHub once per day through **December 30, 2030**. Written in **Python**, runs in the cloud via **GitHub Actions**, with an optional **local macOS scheduler** as backup.
 
 ## How it works
 
@@ -70,6 +70,7 @@ Installs a `launchd` job that runs the Python app daily at your chosen time.
 | What | Where |
 |------|-------|
 | Commit time (UTC) | `.github/workflows/daily-commit.yml` → `cron` field |
+| Schedule end date | `daily_commit/commit.py` → `SCHEDULE_END_DATE` |
 | Commit message | `daily_commit/commit.py` |
 | What gets updated | `daily_commit/commit.py` → change `LOG_FILE` |
 | Local run time | `python3 -m daily_commit install-local` |
