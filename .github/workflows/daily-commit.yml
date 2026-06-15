@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: daily-commit
+  cancel-in-progress: false
+
 jobs:
   commit:
     runs-on: ubuntu-latest
@@ -22,7 +26,9 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Create daily commit
-        run: ./commit.sh
+        run: |
+          chmod +x commit.sh
+          ./commit.sh
 
       - name: Push to GitHub
         run: git push

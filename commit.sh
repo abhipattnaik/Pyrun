@@ -1,11 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR"
+
 LOG_FILE="logs/activity.log"
 mkdir -p logs
 
 timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-echo "$timestamp — automated daily commit" >> "$LOG_FILE"
+commit_count=0
+if [[ -f "$LOG_FILE" ]]; then
+  commit_count="$(grep -c "automated daily commit" "$LOG_FILE" || true)"
+fi
+commit_count=$((commit_count + 1))
+echo "$timestamp — automated daily commit #$commit_count" >> "$LOG_FILE"
 
 git add "$LOG_FILE"
-git commit -m "chore: daily commit on $timestamp"
+
+if git diff --cached --quiet; then
+  echo "No changes to commit."
+  exit 0
+fi
+
+git commit -m "chore: daily commit #$commit_count on $timestamp"
