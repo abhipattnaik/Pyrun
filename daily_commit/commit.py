@@ -4,6 +4,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from daily_commit.git_utils import run_git
+from daily_commit.python_version import PythonVersionSync, sync_python_version
 
 LOG_FILE = Path("logs/activity.log")
 MARKER = "automated daily commit"
@@ -29,10 +30,21 @@ def next_commit_count(log_file: Path) -> int:
     return count + 1
 
 
+def _commit_message(commit_count: int, timestamp: str, version_sync: PythonVersionSync) -> str:
+    message = f"chore: daily commit #{commit_count} on {timestamp}"
+    if version_sync.updated:
+        message += (
+            f" (Python {version_sync.current_minor} -> {version_sync.latest_minor})"
+        )
+    return message
+
+
 def create_daily_commit(root: Path) -> tuple[bool, int, str]:
     if not is_within_schedule():
         print(schedule_status())
         return False, 0, ""
+
+    version_sync = sync_python_version(root)
 
     log_file = root / LOG_FILE
     log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -42,15 +54,22 @@ def create_daily_commit(root: Path) -> tuple[bool, int, str]:
 
     with log_file.open("a", encoding="utf-8") as handle:
         handle.write(f"{timestamp} — {MARKER} #{commit_count}\n")
+        if version_sync.updated:
+            handle.write(
+                f"{timestamp} — python version updated to "
+                f"{version_sync.latest_minor} ({version_sync.latest_full})\n"
+            )
 
-    run_git("add", str(LOG_FILE), cwd=root)
+    files_to_stage = {LOG_FILE, *version_sync.changed_files}
+    for path in files_to_stage:
+        run_git("add", str(path), cwd=root)
 
     diff = run_git("diff", "--cached", "--quiet", cwd=root, check=False)
     if diff.returncode == 0:
         print("No changes to commit.")
         return False, commit_count, timestamp
 
-    message = f"chore: daily commit #{commit_count} on {timestamp}"
+    message = _commit_message(commit_count, timestamp, version_sync)
     run_git("commit", "-m", message, cwd=root)
     return True, commit_count, timestamp
 

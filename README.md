@@ -5,8 +5,9 @@ Automatically commits to GitHub once per day through **December 30, 2030**. Writ
 ## How it works
 
 1. A GitHub Action runs every day at **12:00 UTC**.
-2. Python appends a timestamped line to `logs/activity.log`.
-3. It creates a commit and pushes to your repository.
+2. Python checks for the latest stable Python release and updates CI config when a new version is available.
+3. Python appends a timestamped line to `logs/activity.log`.
+4. It creates a commit and pushes to your repository.
 
 You can also trigger a commit manually from **Actions** → **Daily Commit** → **Run workflow**.
 
@@ -71,6 +72,7 @@ Installs a `launchd` job that runs the Python app daily at your chosen time.
 |------|-------|
 | Commit time (UTC) | `.github/workflows/daily-commit.yml` → `cron` field |
 | Schedule end date | `daily_commit/commit.py` → `SCHEDULE_END_DATE` |
+| Python auto-update | `daily_commit/python_version.py` |
 | Commit message | `daily_commit/commit.py` |
 | What gets updated | `daily_commit/commit.py` → change `LOG_FILE` |
 | Local run time | `python3 -m daily_commit install-local` |
