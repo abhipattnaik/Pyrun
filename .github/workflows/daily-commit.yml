@@ -34,7 +34,14 @@ jobs:
           check-latest: true
 
       - name: Create daily commit and push
+        env:
+          # Use your GitHub identity so commits count on your contribution graph.
+          # Email must be verified on https://github.com/settings/emails
+          GIT_AUTHOR_NAME: abhipattnaik
+          GIT_AUTHOR_EMAIL: 82272545+abhipattnaik@users.noreply.github.com
+          GIT_COMMITTER_NAME: abhipattnaik
+          GIT_COMMITTER_EMAIL: 82272545+abhipattnaik@users.noreply.github.com
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "$GIT_AUTHOR_NAME"
+          git config user.email "$GIT_AUTHOR_EMAIL"
           python -m daily_commit ci --branch "$BRANCH"
