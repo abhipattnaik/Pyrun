@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -52,13 +53,20 @@ def create_daily_commit(root: Path) -> tuple[bool, int, str]:
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     commit_count = next_commit_count(log_file)
 
-    with log_file.open("a", encoding="utf-8") as handle:
-        handle.write(f"{timestamp} — {MARKER} #{commit_count}\n")
-        if version_sync.updated:
-            handle.write(
-                f"{timestamp} — python version updated to "
-                f"{version_sync.latest_minor} ({version_sync.latest_full})\n"
-            )
+    log_lines = []
+    if log_file.exists():
+        existing = log_file.read_text(encoding="utf-8")
+        if existing and not existing.endswith("\n"):
+            existing += "\n"
+        log_lines.append(existing)
+
+    log_lines.append(f"{timestamp} — {MARKER} #{commit_count}\n")
+    if version_sync.updated:
+        log_lines.append(
+            f"{timestamp} — python version updated to "
+            f"{version_sync.latest_minor} ({version_sync.latest_full})\n"
+        )
+    log_file.write_text("".join(log_lines), encoding="utf-8")
 
     files_to_stage = {LOG_FILE, *version_sync.changed_files}
     for path in files_to_stage:
@@ -70,7 +78,13 @@ def create_daily_commit(root: Path) -> tuple[bool, int, str]:
         return False, commit_count, timestamp
 
     message = _commit_message(commit_count, timestamp, version_sync)
-    run_git("commit", "-m", message, cwd=root)
+    author_name = os.environ.get("GIT_AUTHOR_NAME", "").strip()
+    author_email = os.environ.get("GIT_AUTHOR_EMAIL", "").strip()
+    if author_name and author_email:
+        author = f"{author_name} <{author_email}>"
+        run_git("commit", "--author", author, "-m", message, cwd=root)
+    else:
+        run_git("commit", "-m", message, cwd=root)
     return True, commit_count, timestamp
 
 
