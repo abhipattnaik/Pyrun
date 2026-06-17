@@ -53,7 +53,7 @@ flowchart LR
 <details>
 <summary><b>Step-by-step breakdown</b></summary>
 
-1. **GitHub Actions** triggers **3 times per day** at **04:00, 12:00, and 20:00 UTC** (or when you click **Run workflow**).
+1. **GitHub Actions** triggers **3 times per day** at **08:00, 14:00, and 20:00 IST** (02:30, 08:30, 14:30 UTC) or when you click **Run workflow**.
 2. **Python version check** — fetches the latest stable Python and updates workflow config if needed.
 3. **Daily log** — appends a timestamped line to `logs/activity.log`.
 4. **Commit & push** — creates a commit and pushes to `main`.
@@ -178,9 +178,9 @@ rm ~/Library/LaunchAgents/com.dailygitcommit.scheduler.plist
 Edit the `cron` lines in `.github/workflows/daily-commit.yml`:
 
 ```yaml
-- cron: "0 4 * * *"    # 09:30 IST
-- cron: "0 12 * * *"   # 17:30 IST
-- cron: "0 20 * * *"   # 01:30 IST (next day)
+- cron: "30 2 * * *"   # 08:00 IST
+- cron: "30 8 * * *"   # 14:00 IST
+- cron: "30 14 * * *"  # 20:00 IST
 ```
 
 Use [crontab.guru](https://crontab.guru/) to build your schedule.
@@ -205,7 +205,7 @@ SCHEDULE_END_DATE = date(2035, 12, 31)  # change as needed
 | Setting | Current value |
 |---------|---------------|
 | CI Python version | `3.14` ([config](config/python-version.json)) |
-| Schedule | 3× daily at 04:00, 12:00, 20:00 UTC |
+| Schedule | 3× daily at 08:00, 14:00, 20:00 IST |
 | Active until | December 30, 2030 |
 | Log file | `logs/activity.log` |
 | Auth | Built-in `GITHUB_TOKEN` (no PAT needed) |

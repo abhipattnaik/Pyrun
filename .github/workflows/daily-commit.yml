@@ -2,11 +2,11 @@ name: Daily Commit
 
 on:
   schedule:
-    # 3 times per day (UTC) through 2030-12-30 (enforced in daily_commit/commit.py)
-    # 04:00 UTC = 09:30 IST | 12:00 UTC = 17:30 IST | 20:00 UTC = 01:30 IST
-    - cron: "0 4 * * *"
-    - cron: "0 12 * * *"
-    - cron: "0 20 * * *"
+    # 3 times per day through 2030-12-30 (enforced in daily_commit/commit.py)
+    # 02:30 UTC = 08:00 IST | 08:30 UTC = 14:00 IST | 14:30 UTC = 20:00 IST
+    - cron: "30 2 * * *"
+    - cron: "30 8 * * *"
+    - cron: "30 14 * * *"
   workflow_dispatch:
 
 permissions:

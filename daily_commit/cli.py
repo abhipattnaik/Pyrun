@@ -105,7 +105,7 @@ def cmd_setup(_: argparse.Namespace) -> int:
 
     print("\nSetup complete.\n")
     print("Next steps:")
-    print("  1. GitHub Actions runs 3x daily (04:00, 12:00, 20:00 UTC)")
+    print("  1. GitHub Actions runs 3x daily (08:00, 14:00, 20:00 IST)")
     print("  2. Test now: python -m daily_commit run")
     print("  3. Optional local scheduler: python -m daily_commit install-local")
     print("  4. Manual trigger: Actions → Daily Commit → Run workflow")
