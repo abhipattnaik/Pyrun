@@ -105,7 +105,7 @@ def cmd_setup(_: argparse.Namespace) -> int:
 
     print("\nSetup complete.\n")
     print("Next steps:")
-    print("  1. GitHub Actions runs daily at 12:00 UTC")
+    print("  1. GitHub Actions runs 3x daily (04:00, 12:00, 20:00 UTC)")
     print("  2. Test now: python -m daily_commit run")
     print("  3. Optional local scheduler: python -m daily_commit install-local")
     print("  4. Manual trigger: Actions → Daily Commit → Run workflow")
@@ -173,7 +173,7 @@ def cmd_install_local(_: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Automatically commit to GitHub once per day.")
+    parser = argparse.ArgumentParser(description="Automatically commit to GitHub three times per day.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("commit", help="Create today's commit locally")

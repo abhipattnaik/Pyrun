@@ -1,7 +1,7 @@
 [project]
 name = "daily-git-commit"
 version = "1.0.0"
-description = "Automatically commit to GitHub once per day"
+description = "Automatically commit to GitHub three times per day"
 requires-python = ">=3.10"
 
 [project.scripts]

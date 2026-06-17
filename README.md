@@ -5,13 +5,13 @@
     <img src="https://github.com/abhipattnaik/daily-git-commit/actions/workflows/daily-commit.yml/badge.svg" alt="Daily Commit status">
   </a>
   <img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white" alt="Python 3.10+">
-  <img src="https://img.shields.io/badge/schedule-12%3A00%20UTC-daily-green" alt="Runs daily at 12:00 UTC">
+  <img src="https://img.shields.io/badge/schedule-3x%20daily-green" alt="Runs 3 times per day">
   <img src="https://img.shields.io/badge/until-2030--12--30-orange" alt="Active until Dec 30 2030">
   <img src="https://img.shields.io/badge/deps-stdlib%20only-lightgrey" alt="No pip dependencies">
 </p>
 
 <p align="center">
-  <strong>Commits to GitHub automatically — every day, no Mac required.</strong><br>
+  <strong>Commits to GitHub automatically — 3 times per day, no Mac required.</strong><br>
   Python app + GitHub Actions + optional local macOS scheduler.
 </p>
 
@@ -40,7 +40,7 @@
 
 ```mermaid
 flowchart LR
-    A[⏰ 12:00 UTC daily] --> B[GitHub Actions]
+    A[⏰ 3x daily UTC] --> B[GitHub Actions]
     B --> C{Before Dec 30, 2030?}
     C -->|No| D[Skip — schedule ended]
     C -->|Yes| E[Check latest Python]
@@ -53,7 +53,7 @@ flowchart LR
 <details>
 <summary><b>Step-by-step breakdown</b></summary>
 
-1. **GitHub Actions** triggers every day at **12:00 UTC** (or when you click **Run workflow**).
+1. **GitHub Actions** triggers **3 times per day** at **04:00, 12:00, and 20:00 UTC** (or when you click **Run workflow**).
 2. **Python version check** — fetches the latest stable Python and updates workflow config if needed.
 3. **Daily log** — appends a timestamped line to `logs/activity.log`.
 4. **Commit & push** — creates a commit and pushes to `main`.
@@ -173,12 +173,14 @@ rm ~/Library/LaunchAgents/com.dailygitcommit.scheduler.plist
 | What file gets updated | `daily_commit/commit.py` → `LOG_FILE` |
 
 <details>
-<summary><b>Change the daily run time</b></summary>
+<summary><b>Change the run schedule</b></summary>
 
-Edit the `cron` line in `.github/workflows/daily-commit.yml`:
+Edit the `cron` lines in `.github/workflows/daily-commit.yml`:
 
 ```yaml
-- cron: "0 12 * * *"   # 12:00 UTC every day
+- cron: "0 4 * * *"    # 09:30 IST
+- cron: "0 12 * * *"   # 17:30 IST
+- cron: "0 20 * * *"   # 01:30 IST (next day)
 ```
 
 Use [crontab.guru](https://crontab.guru/) to build your schedule.
@@ -203,7 +205,7 @@ SCHEDULE_END_DATE = date(2035, 12, 31)  # change as needed
 | Setting | Current value |
 |---------|---------------|
 | CI Python version | `3.14` ([config](config/python-version.json)) |
-| Schedule | Daily at 12:00 UTC |
+| Schedule | 3× daily at 04:00, 12:00, 20:00 UTC |
 | Active until | December 30, 2030 |
 | Log file | `logs/activity.log` |
 | Auth | Built-in `GITHUB_TOKEN` (no PAT needed) |
