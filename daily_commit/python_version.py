@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import urllib.error
 import urllib.request
@@ -55,18 +56,33 @@ def fetch_latest_stable_python() -> tuple[str, str]:
 
 
 def read_configured_minor(root: Path) -> str:
+    config_path = root / VERSION_CONFIG
+    if config_path.exists():
+        try:
+            data = json.loads(config_path.read_text(encoding="utf-8"))
+            minor = str(data.get("minor", "")).strip()
+            if minor and minor != "3.x":
+                return minor
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    pyproject_path = root / PYPROJECT_FILE
+    if pyproject_path.exists():
+        match = PYPROJECT_TARGET_RE.search(pyproject_path.read_text(encoding="utf-8"))
+        if match and match.group(2) != "3.x":
+            return match.group(2)
+
     workflow = root / WORKFLOW_FILE
-    if not workflow.exists():
-        return "3.12"
+    if workflow.exists():
+        match = WORKFLOW_VERSION_RE.search(workflow.read_text(encoding="utf-8"))
+        if match:
+            configured = match.group(2)
+            if STABLE_VERSION_RE.fullmatch(configured):
+                return _to_minor(configured)
+            if configured != "3.x":
+                return configured
 
-    match = WORKFLOW_VERSION_RE.search(workflow.read_text(encoding="utf-8"))
-    if not match:
-        return "3.12"
-
-    configured = match.group(2)
-    if STABLE_VERSION_RE.fullmatch(configured):
-        return _to_minor(configured)
-    return configured
+    return "3.14"
 
 
 def _write_version_config(root: Path, minor: str, full_version: str) -> Path:
@@ -82,16 +98,23 @@ def _write_version_config(root: Path, minor: str, full_version: str) -> Path:
     return config_path
 
 
-def _update_workflow(root: Path, minor: str) -> Path:
+def _update_workflow(root: Path, minor: str) -> Path | None:
     workflow = root / WORKFLOW_FILE
+    if not workflow.exists():
+        return None
     text = workflow.read_text(encoding="utf-8")
+    match = WORKFLOW_VERSION_RE.search(text)
+    if match and match.group(2) == "3.x":
+        return None
     updated = WORKFLOW_VERSION_RE.sub(
         lambda match: f"{match.group(1)}{minor}{match.group(3)}",
         text,
         count=1,
     )
-    workflow.write_text(updated, encoding="utf-8")
-    return workflow
+    if updated != text:
+        workflow.write_text(updated, encoding="utf-8")
+        return workflow
+    return None
 
 
 def _update_pyproject(root: Path, minor: str) -> Path | None:
@@ -131,13 +154,21 @@ def sync_python_version(root: Path) -> PythonVersionSync:
         print(f"Python version up to date ({current_minor}). Latest available: {latest_minor}.")
         return PythonVersionSync(False, current_minor, latest_minor, latest_full, ())
 
-    changed = (
-        _update_workflow(root, latest_minor),
+    changed: list[Path] = [
         _write_version_config(root, latest_minor, latest_full),
-    )
+    ]
     pyproject = _update_pyproject(root, latest_minor)
     if pyproject is not None:
-        changed = (*changed, pyproject)
+        changed.append(pyproject)
+
+    # Note: GITHUB_TOKEN in GitHub Actions cannot push changes touching .github/workflows/*.
+    # The CI workflow uses python-version: "3.x" with check-latest: true.
+    # Therefore, we never modify or stage workflow files during GitHub Actions CI.
+    is_ci = os.environ.get("GITHUB_ACTIONS") == "true" or os.environ.get("CI") == "true"
+    if not is_ci:
+        workflow = _update_workflow(root, latest_minor)
+        if workflow is not None:
+            changed.append(workflow)
 
     print(f"Python version updated: {current_minor} -> {latest_minor} ({latest_full})")
-    return PythonVersionSync(True, current_minor, latest_minor, latest_full, changed)
+    return PythonVersionSync(True, current_minor, latest_minor, latest_full, tuple(changed))

@@ -204,7 +204,7 @@ SCHEDULE_END_DATE = date(2035, 12, 31)  # change as needed
 
 | Setting | Current value |
 |---------|---------------|
-| CI Python version | `3.14` ([config](config/python-version.json)) |
+| CI Python version | `3.x` / `3.15` ([config](config/python-version.json)) |
 | Schedule | 3× daily at 08:00, 14:00, 20:00 IST |
 | Active until | December 30, 2030 |
 | Log file | `logs/activity.log` |

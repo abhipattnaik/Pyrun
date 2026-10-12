@@ -1,6 +1,6 @@
 {
-  "minor": "3.14",
-  "full_version": "3.14.6",
-  "updated_at": "2026-06-15T21:18:55Z",
+  "minor": "3.15",
+  "full_version": "3.15.0",
+  "updated_at": "2026-10-12T13:39:05Z",
   "source": "https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json"
 }

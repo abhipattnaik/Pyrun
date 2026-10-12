@@ -8,4 +8,4 @@ requires-python = ">=3.10"
 daily-commit = "daily_commit.cli:main"
 
 [tool.daily_commit]
-ci-python-version = "3.14"
+ci-python-version = "3.15"
