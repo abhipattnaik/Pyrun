@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -88,6 +89,25 @@ def create_daily_commit(root: Path) -> tuple[bool, int, str]:
     return True, commit_count, timestamp
 
 
+def push_with_retry(root: Path, branch: str, max_retries: int = 5, initial_delay: float = 2.0) -> None:
+    delay = initial_delay
+    last_error: Exception | None = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            run_git("push", "origin", branch, cwd=root)
+            return
+        except Exception as exc:
+            last_error = exc
+            print(f"Push attempt {attempt}/{max_retries} failed: {exc}")
+            if attempt < max_retries:
+                # Pull latest in case a concurrent commit was pushed
+                run_git("pull", "--rebase", "origin", branch, cwd=root, check=False)
+                time.sleep(delay)
+                delay *= 2
+    if last_error:
+        raise last_error
+
+
 def run_ci(root: Path, branch: str = "main") -> None:
     if not is_within_schedule():
         print(schedule_status())
@@ -99,7 +119,7 @@ def run_ci(root: Path, branch: str = "main") -> None:
 
     created, commit_count, timestamp = create_daily_commit(root)
     if created:
-        run_git("push", "origin", branch, cwd=root)
+        push_with_retry(root, branch)
         print(f"Pushed daily commit #{commit_count} ({timestamp}).")
     else:
         print("Nothing new to push.")
